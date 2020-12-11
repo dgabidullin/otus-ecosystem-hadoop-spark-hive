@@ -31,5 +31,5 @@
 
 Пример запуска:
 ```
-/path/to/assembly-jar /opt/otus-homework/1/africa.json
+scala /path/to/assembly-jar /opt/otus-homework/1/africa.json
 ```
