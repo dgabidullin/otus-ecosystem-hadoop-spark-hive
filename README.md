@@ -1,2 +1,2 @@
 # otus-ecosystem-hadoop-spark-hive
-Тут будут домашки
+Домашние работы курса OTUS "Экосистема Hadoop, Spark, Hive"
