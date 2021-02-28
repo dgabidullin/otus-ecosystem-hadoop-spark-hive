@@ -1,69 +1,71 @@
 package kafka
 
-import org.apache.kafka.clients.consumer.{ConsumerRecord, ConsumerRecords, KafkaConsumer, OffsetAndMetadata}
+import org.apache.kafka.clients.consumer.{ConsumerRecord, KafkaConsumer}
 import org.apache.kafka.common.serialization.StringDeserializer
 
-
-import java.util.{Collections, Properties}
-import scala.collection.JavaConverters.{asJavaCollectionConverter, iterableAsScalaIterableConverter}
+import java.time.Duration
+import java.util
+import java.util.Properties
+import scala.collection.JavaConverters.asJavaCollectionConverter
 import scala.collection.convert.ImplicitConversions.`collection AsScalaIterable`
-import scala.collection.immutable.HashMap
+import scala.collection.mutable
 
 object BookConsumer {
 
-  //  for (TopicPartition partition : records.partitions()) {
-  //    List<ConsumerRecord<String, String>> partitionRecords = records.records(partition);
-  //    for (ConsumerRecord<String, String> record : partitionRecords) {
-  //      System.out.println(record.offset() + ": " + record.value());
-  //    }
-  //    long lastOffset = partitionRecords.get(partitionRecords.size() - 1).offset();
-  //    consumer.commitSync(Collections.singletonMap(partition, new OffsetAndMetadata(lastOffset + 1)));
-  //  }
-  //
   val props = new Properties()
-  props.put("bootstrap.servers", "192.168.99.102:29092")
+  props.put("bootstrap.servers", "localhost:29092")
   props.put("group.id", "consumer1")
 
   val consumer = new KafkaConsumer(props, new StringDeserializer, new StringDeserializer)
 
-  try {
+  def printLastRecords(topic: String, recordsCountToPrint: Int): Unit = {
+    try {
+      val bufferPartitionRecordsToPrint =
+        new mutable.HashMap[String, List[ConsumerRecord[String, String]]].withDefaultValue(List[ConsumerRecord[String, String]]())
 
-    consumer.subscribe(List("books").asJavaCollection)
-    while (true) {
+      subscribeTo(topic)
+      val bookRecords = consumer.poll(Duration.ofSeconds(3))
+      val partitionsWithMaxOffsets = initPartitionsMaxOffsets()
 
-
-      val batchSize = 5
-      val partitions = new HashMap[String, List[ConsumerRecord[String, String]]]()
-
-      val records: ConsumerRecords[String, String] = consumer.poll(100)
-      for (partition <- records.partitions().toIterator) {
-        val partitionRecords = records.records(partition)
-        partitionRecords.forEach {
-          println
-        }
-        val lastOffset = partitionRecords.get(partitionRecords.size - 1).offset
-        consumer.commitSync(Collections.singletonMap(partition, new OffsetAndMetadata(lastOffset + 1)))
+      for (partition <- bookRecords.partitions()) {
+        bookRecords.records(partition).forEach(rec => {
+          val key = s"${rec.topic()}_${rec.partition()}"
+          if (rec.offset() > (partitionsWithMaxOffsets.get(key) - recordsCountToPrint)) {
+            bufferPartitionRecordsToPrint(key) ::= rec
+            bufferPartitionRecordsToPrint.put(key, bufferPartitionRecordsToPrint(key))
+          }
+        })
       }
-
-
-      //    ConsumerRecords<String, String> records = consumer.poll(100);
-      //    for (ConsumerRecord<String, String> record : records) {
-      //      buffer.add(record);
-      //    }
-      //    if (buffer.size() >= minBatchSize) {
-      //      insertIntoDb(buffer);
-      //      consumer.commitSync();
-      //      buffer.clear();
-      //    }
+      bufferPartitionRecordsToPrint
+        .keys
+        .foreach(
+          partition => bufferPartitionRecordsToPrint(partition)
+            .foreach(println)
+        )
+    } finally {
+      consumer.close()
     }
-  } finally {
-
-    consumer.close()
-
   }
 
-  //  consumer
-  //    .poll(Duration.ofSeconds(1))
-  //    .asScala
-  //    .foreach { r => println(r.value()) }
+  def initPartitionsMaxOffsets(): util.HashMap[String, Long] = {
+    val partitionMaxOffsets = new util.HashMap[String, Long]()
+    for (partition <- consumer.assignment()) {
+      val key = s"${partition.topic()}_${partition.partition()}"
+      val lastPartitionOffset = consumer.position(partition) - 1
+      println(s"partition=${partition.partition()}, lastOffset=$lastPartitionOffset")
+      partitionMaxOffsets.put(key, lastPartitionOffset)
+    }
+    partitionMaxOffsets
+  }
+
+  def subscribeTo(topic: String): Unit = {
+    consumer.subscribe(List(topic).asJavaCollection)
+    val isAssigned = false
+    while (!isAssigned) {
+      if (!consumer.assignment().isEmpty) {
+        return
+      }
+      consumer.poll(Duration.ofMillis(0))
+    }
+  }
 }

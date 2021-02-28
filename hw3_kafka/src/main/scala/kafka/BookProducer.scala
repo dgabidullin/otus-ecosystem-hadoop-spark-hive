@@ -10,7 +10,7 @@ import java.util.Properties
 
 object BookProducer {
   val props = new Properties()
-  props.put("bootstrap.servers", "192.168.99.102:29092")
+  props.put("bootstrap.servers", "localhost:29092")
 
   val producer = new KafkaProducer(props, new StringSerializer, new StringSerializer)
 
