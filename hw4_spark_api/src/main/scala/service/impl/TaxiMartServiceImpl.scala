@@ -3,12 +3,12 @@ package service.impl
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.functions.{col, count, lit, max, mean, min, stddev}
 import org.apache.spark.sql.{Dataset, Row}
-import service.TaxiService
+import service.TaxiMartService
 
 import java.time.{LocalDateTime, LocalTime}
 import java.time.format.DateTimeFormatter
 
-class TaxiServiceImpl extends TaxiService {
+class TaxiMartServiceImpl extends TaxiMartService {
 
   override def popularBorough(taxiFactsDF: Dataset[Row], taxiDictDF: Dataset[Row]): Dataset[Row] = {
     taxiFactsDF.select("DOLocationID")

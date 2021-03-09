@@ -4,7 +4,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Dataset, Row}
 import java.time.LocalTime
 
-trait TaxiService {
+trait TaxiMartService {
   def popularBorough(taxiFactsDF: Dataset[Row], taxiDictDF: Dataset[Row]): Dataset[Row]
 
   def popularTime(taxiFactsDF: Dataset[Row]): RDD[(LocalTime, Int)]

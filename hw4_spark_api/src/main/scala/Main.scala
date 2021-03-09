@@ -1,5 +1,5 @@
 import org.apache.spark.sql.{SaveMode, SparkSession}
-import service.impl.TaxiServiceImpl
+import service.impl.TaxiMartServiceImpl
 
 import java.util.Properties
 
@@ -23,7 +23,7 @@ object Main extends App {
     .config("spark.master", "local[*]")
     .getOrCreate()
 
-  val taxiService = new TaxiServiceImpl()
+  val taxiService = new TaxiMartServiceImpl()
 
   val taxiFactsDF = spark.read.parquet(s"$BASE_DATA_PATH/yellow_taxi_jan_25_2018")
   val taxiDictDF = spark.read
@@ -36,14 +36,14 @@ object Main extends App {
     .write
     .mode(SaveMode.Overwrite)
     .parquet(s"$BASE_DATA_PATH/$POPULAR_BOROUGH_PATH")
-  println(s"parquet file for popular borough writing in $BASE_DATA_PATH/$POPULAR_BOROUGH_PATH")
+  println(s"parquet file for popular borough dataset wrote in $BASE_DATA_PATH/$POPULAR_BOROUGH_PATH")
 
   val popularTimeDF = taxiService.popularTime(taxiFactsDF)
   popularTimeDF.take(10).foreach(println)
   popularTimeDF
     .map(row => s"${row._1.toString} ${row._2.toString}")
     .saveAsTextFile(s"$BASE_DATA_PATH/$POPULAR_TIME_PATH")
-  println(s"text file for popular time writing in $BASE_DATA_PATH/$POPULAR_TIME_PATH")
+  println(s"text file for popular time dataset wrote in $BASE_DATA_PATH/$POPULAR_TIME_PATH")
 
   val tripDistanceDistributionDF = taxiService.tripDistanceDistribution(taxiFactsDF, taxiDictDF)
   tripDistanceDistributionDF.show()
@@ -51,5 +51,5 @@ object Main extends App {
     .write
     .mode(SaveMode.Overwrite)
     .jdbc(DB_URL, TRIP_DISTANCE_TABLE, connectionProperties)
-  println(s"tripDistanceDistributionDF writing in tableName=$TRIP_DISTANCE_TABLE")
+  println(s"trip distance distribution dataset wrote in tableName=$TRIP_DISTANCE_TABLE")
 }
