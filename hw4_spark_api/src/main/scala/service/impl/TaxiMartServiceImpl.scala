@@ -8,6 +8,7 @@ import service.TaxiMartService
 import java.time.{LocalDateTime, LocalTime}
 import java.time.format.DateTimeFormatter
 
+
 class TaxiMartServiceImpl extends TaxiMartService {
 
   override def popularBorough(taxiFactsDF: Dataset[Row], taxiDictDF: Dataset[Row]): Dataset[Row] = {
@@ -21,11 +22,7 @@ class TaxiMartServiceImpl extends TaxiMartService {
   override def popularTime(taxiFactsDF: Dataset[Row]): RDD[(LocalTime, Int)] = {
     taxiFactsDF.rdd
       .map(trip => (
-        LocalDateTime.parse(
-          trip(Constants.TPEP_PICKUP_DATETIME_COLUMN_INDEX).toString,
-          Constants.TPEP_PICKUP_DATETIME_COLUMN_FORMATTER
-        ).toLocalTime, 1)
-      )
+        LocalDateTime.parse(trip(Constants.TPEP_PICKUP_COLUMN_INDEX).toString, Constants.TPEP_PICKUP_DATE_TIME_FORMATTER).toLocalTime, 1))
       .reduceByKey(_ + _)
       .sortBy(_._2, ascending = false)
   }
@@ -47,6 +44,6 @@ class TaxiMartServiceImpl extends TaxiMartService {
 }
 
 object Constants extends Serializable {
-  final val TPEP_PICKUP_DATETIME_COLUMN_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S")
-  final val TPEP_PICKUP_DATETIME_COLUMN_INDEX = 1
+  final val TPEP_PICKUP_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S")
+  final val TPEP_PICKUP_COLUMN_INDEX = 1
 }

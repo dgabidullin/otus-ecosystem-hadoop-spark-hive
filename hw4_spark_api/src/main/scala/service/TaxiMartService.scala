@@ -2,6 +2,7 @@ package service
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Dataset, Row}
+
 import java.time.LocalTime
 
 trait TaxiMartService {

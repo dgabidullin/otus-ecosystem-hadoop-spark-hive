@@ -19,7 +19,7 @@ object Main extends App {
   connectionProperties.put("driver", DRIVER)
 
   val spark = SparkSession.builder()
-    .appName("Joins")
+    .appName("HW4_data_api")
     .config("spark.master", "local[*]")
     .getOrCreate()
 
@@ -42,6 +42,7 @@ object Main extends App {
   popularTimeDF.take(10).foreach(println)
   popularTimeDF
     .map(row => s"${row._1.toString} ${row._2.toString}")
+    .coalesce(1)
     .saveAsTextFile(s"$BASE_DATA_PATH/$POPULAR_TIME_PATH")
   println(s"text file for popular time dataset wrote in $BASE_DATA_PATH/$POPULAR_TIME_PATH")
 
