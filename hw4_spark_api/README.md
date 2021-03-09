@@ -29,7 +29,7 @@ Spark приложение на Scala
 ```
 docker-compose up -d
 ```
-Нужно установить флаг “Include dependencies with "Provided" scope”
+Нужно установить флаг “Include dependencies with "Provided" scope” в окне “Run/Debug Configurations”
 ```
 Run hw4_spark_api/src/main/scala/Main.scala
 ```
