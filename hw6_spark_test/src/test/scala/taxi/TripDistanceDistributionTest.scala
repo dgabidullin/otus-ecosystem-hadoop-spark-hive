@@ -1,9 +1,11 @@
+package taxi
+
 import org.apache.spark.sql.QueryTest.checkAnswer
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.test.SharedSparkSession
-import service.{DatasetReader, DatasetWriter}
 import service.impl.{DatasetReaderImpl, DatasetWriterImpl, TaxiMartServiceImpl}
+import service.{DatasetReader, DatasetWriter}
 
 import java.util.Properties
 

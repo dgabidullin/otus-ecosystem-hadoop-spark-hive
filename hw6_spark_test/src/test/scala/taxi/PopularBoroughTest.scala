@@ -1,3 +1,5 @@
+package taxi
+
 import org.apache.spark.sql.QueryTest.checkAnswer
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.test.SharedSparkSession
