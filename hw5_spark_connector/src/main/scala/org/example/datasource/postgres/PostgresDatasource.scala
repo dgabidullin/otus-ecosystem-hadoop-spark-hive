@@ -67,7 +67,7 @@ object PostgresPartitions {
     val step = connectionProperties.partitionSize.toLong
     var startRange: Long = 1
     lowerBound.to(connectionProperties.partitionNum.toInt).by(1).foreach { _ =>
-      val endRange = startRange + step - 1
+      val endRange = startRange + step
       partitions += PostgresPartition(
         connectionProperties.url,
         connectionProperties.user,
@@ -75,7 +75,7 @@ object PostgresPartitions {
         connectionProperties.tableName,
         connectionProperties.partitionColumn,
         startRange,
-        endRange
+        endRange - 1
       )
       startRange = endRange
     }
