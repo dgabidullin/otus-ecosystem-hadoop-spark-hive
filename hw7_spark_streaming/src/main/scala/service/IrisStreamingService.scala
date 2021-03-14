@@ -6,7 +6,7 @@ import org.apache.spark.sql.functions.{col, concat_ws, from_csv, udf}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.types.{DoubleType, StringType, StructField, StructType}
 
-class IrisStreamingService(private val spark: SparkSession, private val modelPath: String) {
+class IrisStreamingService(private val spark: SparkSession, private val modelPath: String) extends java.io.Serializable {
 
   import spark.implicits._
 
