@@ -16,7 +16,7 @@
    Должен быть предоставлен код программы
 
 ### Запуск приложения из Idea:
-Укажем в опцию при запуске "include dependencies with "Provided" scope", потом run src/main/scala/Main.scala
+Укажем опцию при запуске "include dependencies with "Provided" scope", потом run src/main/scala/Main.scala
 
 Предварительно
 ```
@@ -47,7 +47,7 @@ docker exec hw7_spark_streaming_broker_1 bash -c "chmod +x /scripts/output.sh"
 docker exec hw7_spark_streaming_broker_1 bash -c "/scripts/output.sh | kafka-console-producer --bootstrap-server localhost:9092 --topic input"
 ```
 
-Посмотрим на результат работы стрима с моделью
+Посмотрим на результат
 ```
 docker exec hw7_spark_streaming_broker_1 kafka-console-consumer \
 --bootstrap-server localhost:9092 \
