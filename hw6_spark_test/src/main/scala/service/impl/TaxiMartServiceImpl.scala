@@ -1,7 +1,7 @@
 package service.impl
 
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.functions.{col, count, lit, max, mean, min, stddev}
+import org.apache.spark.sql.functions.{broadcast, col, count, lit, max, mean, min, stddev}
 import org.apache.spark.sql.{Dataset, Row}
 import service.TaxiMartService
 
@@ -13,7 +13,7 @@ class TaxiMartServiceImpl extends TaxiMartService {
 
   override def popularBorough(taxiFactsDF: Dataset[Row], taxiDictDF: Dataset[Row]): Dataset[Row] = {
     taxiFactsDF.select("DOLocationID")
-      .join(taxiDictDF, taxiFactsDF("DOLocationID") === taxiDictDF("LocationID"))
+      .join(broadcast(taxiDictDF), taxiFactsDF("DOLocationID") === taxiDictDF("LocationID"))
       .groupBy(taxiDictDF("Borough"))
       .agg(count("Borough").as("total"))
       .orderBy(col("total").desc)
@@ -29,7 +29,7 @@ class TaxiMartServiceImpl extends TaxiMartService {
 
   override def tripDistanceDistribution(taxiFactsDF: Dataset[Row], taxiDictDF: Dataset[Row]): Dataset[Row] = {
     taxiFactsDF.select("DOLocationID", "trip_distance")
-      .join(taxiDictDF, taxiFactsDF("DOLocationID") === taxiDictDF("LocationID"))
+      .join(broadcast(taxiDictDF), taxiFactsDF("DOLocationID") === taxiDictDF("LocationID"))
       .filter(col("trip_distance").gt(lit(0)))
       .groupBy(taxiDictDF("Borough"))
       .agg(
