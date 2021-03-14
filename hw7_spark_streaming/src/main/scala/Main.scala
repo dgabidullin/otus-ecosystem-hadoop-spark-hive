@@ -10,7 +10,7 @@ object Main extends App {
 
   val modelPath = "src/main/resources/model"
 
-  if (args.head == "trainMode") {
+  if (args.length > 0 && args.head == "trainMode") {
     println("train mode activated")
     val trainPath = "src/main/resources/train"
     val irisTrainModelService = new IrisModelTrainService(spark, trainPath)
