@@ -1,0 +1,155 @@
+version: '2.1'
+services:
+  jobmanager:
+    image: apache/flink-table:1-FLINK-1.12-scala_2.11
+    build: .
+    hostname: "jobmanager"
+    expose:
+      - "6123"
+    ports:
+      - "8082:8081"
+    command: standalone-job
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+    depends_on:
+      - kafka
+  #      - mysql
+  taskmanager:
+    image: apache/flink-table:1-FLINK-1.12-scala_2.11
+    build: .
+    expose:
+      - "6121"
+      - "6122"
+    depends_on:
+      - jobmanager
+    command: taskmanager
+    links:
+      - jobmanager:jobmanager
+    environment:
+      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+#  namenode:
+#    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+#    container_name: namenode
+#    hostname: namenode
+#    restart: always
+#    ports:
+#      - "50070:50070"
+#      - "8020:8020"
+#    volumes:
+#      - hadoop_namenode:/hadoop/dfs/name
+#    environment:
+#      - CLUSTER_NAME=test
+#      - INIT_DAEMON_STEP=false
+#    env_file:
+#      - ./hadoop.env
+#  resourcemanager:
+#    image: bde2020/hadoop-resourcemanager:2.0.0-hadoop3.2.1-java8
+#    hostname: resourcemanager
+#    container_name: resourcemanager
+#    ports:
+#      - "8031:8031"
+#      - "8088:8088"
+#    env_file:
+#      - ./hadoop.env
+#  datanode:
+#    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+#    container_name: datanode
+#    hostname: datanode
+#    restart: always
+#    volumes:
+#      - hadoop_datanode:/hadoop/dfs/data
+#    env_file:
+#      - ./hadoop.env
+#    depends_on:
+#      - namenode
+#  flink-master:
+#    image: bde2020/flink-master:1.12.2-hadoop3.2
+#    hostname: flink-master
+#    container_name: flink-master
+#    environment:
+#      - INIT_DAEMON_STEP=setup_flink
+#    ports:
+#      - "8080:8080"
+#      - "8081:8081"
+#  flink-worker:
+#    image: bde2020/flink-worker:1.12.2-hadoop3.2
+#    hostname: flink-worker
+#    container_name: flink-worker
+#    environment:
+#      - FLINK_MASTER_PORT_6123_TCP_ADDR=flink-master
+#    depends_on:
+#      - "flink-master"
+#  table-api:
+#    build: .
+#    image: apache/flink-table-api:1-FLINK-1.12-scala_2.11
+#    environment:
+#      - ENABLE_INIT_DAEMON=false
+#      - FLINK_MASTER_PORT_6123_TCP_ADDR=flink-master
+#      - FLINK_MASTER_PORT_6123_TCP_PORT=8081
+#    links:
+#      - flink-master
+  kafka:
+    image: wurstmeister/kafka:2.12-2.2.1
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: "kafka"
+      KAFKA_ADVERTISED_PORT: "9092"
+      HOSTNAME_COMMAND: "route -n | awk '/UG[ \t]/{print $$2}'"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CREATE_TOPICS: "user_behavior:1:1"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  zookeeper:
+    image: wurstmeister/zookeeper:3.4.6
+    ports:
+      - "2181:2181"
+  data-generator:
+    image: apache/data-generator:1
+    build: ../data-generator
+    depends_on:
+      - kafka
+  mysql:
+    image: mysql:8.0.19
+    command: --default-authentication-plugin=mysql_native_password --secure_file_priv=/data
+    environment:
+      MYSQL_USER: "sql-demo"
+      MYSQL_PASSWORD: "demo-sql"
+      MYSQL_DATABASE: "sql-demo"
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+    volumes:
+      - ./init-sql:/docker-entrypoint-initdb.d
+      - ./data:/data
+#  elasticsearch:
+#    image: docker.elastic.co/elasticsearch/elasticsearch:7.6.0
+#    environment:
+#      - cluster.name=docker-cluster
+#      - bootstrap.memory_lock=true
+#      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+#      - discovery.type=single-node
+#    ports:
+#      - "9200:9200"
+#      - "9300:9300"
+#    ulimits:
+#      memlock:
+#        soft: -1
+#        hard: -1
+#      nofile:
+#        soft: 65536
+#        hard: 65536
+#
+volumes:
+  hadoop_namenode:
+  hadoop_datanode:
+#  grafana:
+#    image: grafana/grafana
+#    ports:
+#      - "3000:3000"
+#    depends_on:
+#      - mysql
+#    volumes:
+#      - ../docker/grafana-spend-report-init/provisioning/:/etc/grafana/provisioning/
+#      - ../docker/grafana-spend-report-init/dashboard.json:/etc/grafana/dashboard.json
+#      - ../docker/grafana-spend-report-init/grafana.ini:/etc/grafana/grafana.ini
