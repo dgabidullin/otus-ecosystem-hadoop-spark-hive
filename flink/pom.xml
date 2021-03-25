@@ -12,7 +12,6 @@
     <modules>
         <module>flink-table-api-app</module>
         <module>flink-base-kafka-app</module>
-        <module>flink-base-model</module>
     </modules>
 
     <properties>

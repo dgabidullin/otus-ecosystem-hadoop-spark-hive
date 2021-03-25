@@ -1,93 +1,93 @@
 version: '2.1'
 services:
-  jobmanager:
-    image: apache/flink-table:1-FLINK-1.12-scala_2.11
-    build: .
-    hostname: "jobmanager"
-    expose:
-      - "6123"
-    ports:
-      - "8082:8081"
-    command: standalone-job
-    environment:
-      - JOB_MANAGER_RPC_ADDRESS=jobmanager
-    depends_on:
-      - kafka
-  #      - mysql
-  taskmanager:
-    image: apache/flink-table:1-FLINK-1.12-scala_2.11
-    build: .
-    expose:
-      - "6121"
-      - "6122"
-    depends_on:
-      - jobmanager
-    command: taskmanager
-    links:
-      - jobmanager:jobmanager
-    environment:
-      - JOB_MANAGER_RPC_ADDRESS=jobmanager
-#  namenode:
-#    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
-#    container_name: namenode
-#    hostname: namenode
-#    restart: always
-#    ports:
-#      - "50070:50070"
-#      - "8020:8020"
-#    volumes:
-#      - hadoop_namenode:/hadoop/dfs/name
-#    environment:
-#      - CLUSTER_NAME=test
-#      - INIT_DAEMON_STEP=false
-#    env_file:
-#      - ./hadoop.env
-#  resourcemanager:
-#    image: bde2020/hadoop-resourcemanager:2.0.0-hadoop3.2.1-java8
-#    hostname: resourcemanager
-#    container_name: resourcemanager
-#    ports:
-#      - "8031:8031"
-#      - "8088:8088"
-#    env_file:
-#      - ./hadoop.env
-#  datanode:
-#    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
-#    container_name: datanode
-#    hostname: datanode
-#    restart: always
-#    volumes:
-#      - hadoop_datanode:/hadoop/dfs/data
-#    env_file:
-#      - ./hadoop.env
-#    depends_on:
-#      - namenode
-#  flink-master:
-#    image: bde2020/flink-master:1.12.2-hadoop3.2
-#    hostname: flink-master
-#    container_name: flink-master
-#    environment:
-#      - INIT_DAEMON_STEP=setup_flink
-#    ports:
-#      - "8080:8080"
-#      - "8081:8081"
-#  flink-worker:
-#    image: bde2020/flink-worker:1.12.2-hadoop3.2
-#    hostname: flink-worker
-#    container_name: flink-worker
-#    environment:
-#      - FLINK_MASTER_PORT_6123_TCP_ADDR=flink-master
-#    depends_on:
-#      - "flink-master"
-#  table-api:
+#  jobmanager:
+#    image: apache/flink-table:1-FLINK-1.12-scala_2.11
 #    build: .
-#    image: apache/flink-table-api:1-FLINK-1.12-scala_2.11
+#    hostname: "jobmanager"
+#    expose:
+#      - "6123"
+#    ports:
+#      - "8082:8081"
+#    command: standalone-job
 #    environment:
-#      - ENABLE_INIT_DAEMON=false
-#      - FLINK_MASTER_PORT_6123_TCP_ADDR=flink-master
-#      - FLINK_MASTER_PORT_6123_TCP_PORT=8081
+#      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+#    depends_on:
+#      - kafka
+#  #      - mysql
+#  taskmanager:
+#    image: apache/flink-table:1-FLINK-1.12-scala_2.11
+#    build: .
+#    expose:
+#      - "6121"
+#      - "6122"
+#    depends_on:
+#      - jobmanager
+#    command: taskmanager
 #    links:
-#      - flink-master
+#      - jobmanager:jobmanager
+#    environment:
+#      - JOB_MANAGER_RPC_ADDRESS=jobmanager
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: namenode
+    hostname: namenode
+    restart: always
+    ports:
+      - "50070:50070"
+      - "8020:8020"
+    volumes:
+      - hadoop_namenode:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=test
+      - INIT_DAEMON_STEP=false
+    env_file:
+      - ./hadoop.env
+  resourcemanager:
+    image: bde2020/hadoop-resourcemanager:2.0.0-hadoop3.2.1-java8
+    hostname: resourcemanager
+    container_name: resourcemanager
+    ports:
+      - "8031:8031"
+      - "8088:8088"
+    env_file:
+      - ./hadoop.env
+  datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode
+    hostname: datanode
+    restart: always
+    volumes:
+      - hadoop_datanode:/hadoop/dfs/data
+    env_file:
+      - ./hadoop.env
+    depends_on:
+      - namenode
+  flink-master:
+    image: bde2020/flink-master:1.12.2-hadoop3.2
+    hostname: flink-master
+    container_name: flink-master
+    environment:
+      - INIT_DAEMON_STEP=setup_flink
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+  flink-worker:
+    image: bde2020/flink-worker:1.12.2-hadoop3.2
+    hostname: flink-worker
+    container_name: flink-worker
+    environment:
+      - FLINK_MASTER_PORT_6123_TCP_ADDR=flink-master
+    depends_on:
+      - "flink-master"
+  table-api:
+    build: .
+    image: apache/flink-table-api:1-FLINK-1.12-scala_2.11
+    environment:
+      - ENABLE_INIT_DAEMON=false
+      - FLINK_MASTER_PORT_6123_TCP_ADDR=flink-master
+      - FLINK_MASTER_PORT_6123_TCP_PORT=8081
+    links:
+      - flink-master
   kafka:
     image: wurstmeister/kafka:2.12-2.2.1
     ports:
