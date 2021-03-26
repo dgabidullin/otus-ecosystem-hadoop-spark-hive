@@ -15,9 +15,9 @@ public class UserStoreSerializer implements Serializer<UserStoreEvent> {
 
   @Override
   public byte[] serialize(String s, UserStoreEvent ue) {
-    String csv =
+    String json =
         String.format(
-            "%s, %s, %s, %s, %s, %s",
+            "{\"event_time\": \"%s\", \"user_id\": %s, \"event_type\": \"%s\", \"category_code\": \"%s\", \"brand\": \"%s\", \"price\": %s}",
             ue.eventTime.format(formatter),
             ue.userId,
             ue.eventType,
@@ -25,7 +25,7 @@ public class UserStoreSerializer implements Serializer<UserStoreEvent> {
             ue.brand,
             ue.price);
 
-    return csv.getBytes();
+    return json.getBytes();
   }
 
   @Override

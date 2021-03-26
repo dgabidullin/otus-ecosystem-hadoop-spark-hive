@@ -1,0 +1,109 @@
+version: '2.1'
+services:
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: namenode
+    hostname: namenode
+    restart: always
+    ports:
+      - 50070:50070
+    volumes:
+      - hadoop_namenode:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=test
+    env_file:
+      - ../docker/hadoop/hadoop.env
+  datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode
+    hostname: datanode
+    restart: always
+    ports:
+      - 9866:9866
+    volumes:
+      - hadoop_datanode:/hadoop/dfs/data
+    env_file:
+      - ../docker/hadoop/hadoop.env
+  flink-master:
+    image: bde2020/flink-master:1.12.2-hadoop3.2
+    hostname: flink-master
+    container_name: flink-master
+    environment:
+      - INIT_DAEMON_STEP=setup_flink
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+  flink-worker:
+    image: bde2020/flink-worker:1.12.2-hadoop3.2
+    hostname: flink-worker
+    container_name: flink-worker
+    environment:
+      - FLINK_MASTER_PORT_6123_TCP_ADDR=flink-master
+    depends_on:
+      - flink-master
+  batch-layer-starter:
+    build: ../flink-batch-layer-app
+    image: apache/flink-batch-layer-app:1-FLINK-1.12-scala_2.11
+    environment:
+      - ENABLE_INIT_DAEMON=false
+      - FLINK_MASTER_PORT_6123_TCP_ADDR=flink-master
+      - FLINK_MASTER_PORT_6123_TCP_PORT=8081
+    links:
+      - flink-master
+  speed-layer-starter:
+    build: ../flink-speed-layer-app
+    image: apache/flink-speed-layer-app:1-FLINK-1.12-scala_2.11
+    environment:
+      - ENABLE_INIT_DAEMON=false
+      - FLINK_MASTER_PORT_6123_TCP_ADDR=flink-master
+      - FLINK_MASTER_PORT_6123_TCP_PORT=8081
+    links:
+      - flink-master
+  kafka:
+    image: wurstmeister/kafka:2.12-2.2.1
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: "kafka"
+      KAFKA_ADVERTISED_PORT: "9092"
+      HOSTNAME_COMMAND: "route -n | awk '/UG[ \t]/{print $$2}'"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CREATE_TOPICS: "user_behavior:1:1"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  zookeeper:
+    image: wurstmeister/zookeeper:3.4.6
+    ports:
+      - "2181:2181"
+  data-generator:
+    image: apache/data-generator:1
+    build: ../data-generator
+    depends_on:
+      - kafka
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.6.0
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.6.0
+    ports:
+      - "5601:5601"
+
+volumes:
+  hadoop_namenode:
+  hadoop_datanode:
