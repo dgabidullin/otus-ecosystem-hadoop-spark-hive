@@ -8,9 +8,9 @@ public class App {
 
     public static void main(String[] args) {
         EnvironmentSettings settings = EnvironmentSettings.newInstance().build();
-        TableEnvironment tEnv = TableEnvironment.create(settings);
+        TableEnvironment tableEnv = TableEnvironment.create(settings);
 
-        tEnv.executeSql("CREATE TABLE user_behavior (" +
+        tableEnv.executeSql("CREATE TABLE user_behavior (" +
                 "    event_time    TIMESTAMP(3)," +
                 "    user_id       BIGINT," +
                 "    event_type    VARCHAR(15)," +
@@ -25,7 +25,7 @@ public class App {
                 "    'format'    = 'json'" +
                 ")");
 
-        tEnv.executeSql("CREATE TABLE buy_cnt_per_hour (" +
+        tableEnv.executeSql("CREATE TABLE buy_cnt_per_hour (" +
                 "    hour_of_day    BIGINT," +
                 "    buy_cnt        BIGINT" +
                 ") WITH (" +
@@ -35,9 +35,9 @@ public class App {
                 ")"
         );
 
-        Table data = tEnv.from("user_behavior");
+        Table data = tableEnv.from("user_behavior");
 
-        tEnv.sqlQuery("SELECT HOUR(TUMBLE_START(event_time, INTERVAL '1' HOUR)), COUNT(*)" +
+        tableEnv.sqlQuery("SELECT HOUR(TUMBLE_START(event_time, INTERVAL '1' HOUR)), COUNT(*)" +
                         "  FROM " + data +
                         "  WHERE event_type = 'PURCHASE'" +
                         "  GROUP BY TUMBLE(event_time, INTERVAL '1' HOUR)"

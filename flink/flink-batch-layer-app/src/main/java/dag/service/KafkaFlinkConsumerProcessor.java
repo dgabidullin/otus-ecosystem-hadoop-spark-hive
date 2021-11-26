@@ -59,14 +59,14 @@ public class KafkaFlinkConsumerProcessor {
         env.execute("FlinkApp");
     }
 
-    public Properties getKafkaProperties() {
+    private Properties getKafkaProperties() {
         Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka:9092");
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "FlinkConsumerGroup");
         return props;
     }
 
-    public StreamExecutionEnvironment createStreamExecutionEnvironment(String checkpointPath) {
+    private StreamExecutionEnvironment createStreamExecutionEnvironment(String checkpointPath) {
         StreamExecutionEnvironment environment = StreamExecutionEnvironment.getExecutionEnvironment();
         environment.enableCheckpointing(Duration.ofSeconds(60).toMillis());
         environment.setStateBackend(new FsStateBackend(checkpointPath));
